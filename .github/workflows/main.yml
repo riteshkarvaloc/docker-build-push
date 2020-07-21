@@ -13,5 +13,5 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        repository: ocdr/build_by_gitactions
-        tags: latest
+        repository: ocdr/kfserving-custom-model
+        tags: gitactions
