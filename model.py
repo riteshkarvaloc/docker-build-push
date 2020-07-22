@@ -36,14 +36,13 @@ class KFServingSampleModel(kfserving.KFModel):
             return json.dumps({ "error": "Recieved invalid json" })
         data = json_data["signatures"]["inputs"][0][0]["data"]
         #writing the inp image
-        b64_filewriter(filename, data)
+        #b64_filewriter(filename, data)
         
         with open('images/AMRD14-segmentation.jpeg', 'rb') as open_file:
             byte_content = open_file.read()
         base64_bytes = base64.b64encode(byte_content)
         base64_string = base64_bytes.decode('utf-8')
-        logging.info("prep =======> %s",str(output.shape))
-        return {'inp_image':data, 'out_image':base64_string}
+        return {'out_image':base64_string}
 
 if __name__ == "__main__":
     model = KFServingSampleModel("kfserving-custom-model")
