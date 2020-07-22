@@ -1,11 +1,22 @@
 import kfserving
-from torchvision import models, transforms
 from typing import List, Dict
-import torch
 from PIL import Image
 import base64
 import io
 import os
+import logging
+import json
+
+
+filename = 'temp.jpg'
+
+def b64_filewriter(filename, content):
+    string = content.encode('utf8')
+    b64_decode = base64.decodebytes(string)
+    fp = open(filename, "wb")
+    fp.write(b64_decode)
+    fp.close()
+
 
 class KFServingSampleModel(kfserving.KFModel):
     def __init__(self, name: str):
@@ -14,48 +25,25 @@ class KFServingSampleModel(kfserving.KFModel):
         self.ready = False
 
     def load(self):
-        f = open('imagenet_classes.txt')
-        self.classes = [line.strip() for line in f.readlines()]
-
-        model = models.alexnet(pretrained=True)
-        model.eval()
-        self.model = model
-
         self.ready = True
 
-    def predict(self, request: Dict) -> Dict:
-        inputs = request["instances"]
-
-        # Input follows the Tensorflow V1 HTTP API for binary values
-        # https://www.tensorflow.org/tfx/serving/api_rest#encoding_binary_values
-        data = inputs[0]["image"]["b64"]
-
-        raw_img_data = base64.b64decode(data)
-        input_image = Image.open(io.BytesIO(raw_img_data))
-
-        preprocess = transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                 std=[0.229, 0.224, 0.225]),
-        ])
-
-        input_tensor = preprocess(input_image)
-        input_batch = input_tensor.unsqueeze(0)
-
-        output = self.model(input_batch)
-
-        scores = torch.nn.functional.softmax(output, dim=1)[0]
-
-        _, top_5 = torch.topk(output, 5)
-
-        results = {}
-        for idx in top_5[0]:
-            results[self.classes[idx]] = scores[idx].item()
-
-        return {"predictions": results}
-
+    def predict(self, inputs: Dict) -> Dict:
+        del inputs['instances']
+        logging.info("prep =======> %s",str(type(inputs)))
+        try:
+            json_data = inputs
+        except ValueError:
+            return json.dumps({ "error": "Recieved invalid json" })
+        data = json_data["signatures"]["inputs"][0][0]["data"]
+        #writing the inp image
+        b64_filewriter(filename, data)
+        
+        with open('images/AMRD14-segmentation.jpeg', 'rb') as open_file:
+            byte_content = open_file.read()
+        base64_bytes = base64.b64encode(byte_content)
+        base64_string = base64_bytes.decode('utf-8')
+        logging.info("prep =======> %s",str(output.shape))
+        return {'inp_image':data, 'out_image':base64_string}
 
 if __name__ == "__main__":
     model = KFServingSampleModel("kfserving-custom-model")
