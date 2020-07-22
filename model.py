@@ -10,6 +10,8 @@ import json
 
 filename = 'temp.jpg'
 
+model_name = os.getenv('MODEL_NAME',None)
+
 def b64_filewriter(filename, content):
     string = content.encode('utf8')
     b64_decode = base64.decodebytes(string)
@@ -45,6 +47,6 @@ class KFServingSampleModel(kfserving.KFModel):
         return {"out_image":base64_string}
 
 if __name__ == "__main__":
-    model = KFServingSampleModel("kfserving-custom-model")
+    model = KFServingSampleModel(model_name)
     model.load()
     kfserving.KFServer(workers=1).start([model])
