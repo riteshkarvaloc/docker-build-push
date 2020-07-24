@@ -44,7 +44,8 @@ class KFServingSampleModel(kfserving.KFModel):
             byte_content = open_file.read()
         base64_bytes = base64.b64encode(byte_content)
         base64_string = base64_bytes.decode('utf-8')
-        return {"out_image":base64_string}
+        #return {"out_image":base64_string}
+        return {"out_image": 'dummy image'}
 
 if __name__ == "__main__":
     model = KFServingSampleModel(model_name)
