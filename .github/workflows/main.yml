@@ -14,4 +14,4 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
         repository: ocdr/kfserving-custom-model
-        tags: fluidseg
+        tags: fluidseg-v2

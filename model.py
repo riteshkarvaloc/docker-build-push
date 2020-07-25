@@ -37,6 +37,8 @@ class KFServingSampleModel(kfserving.KFModel):
         except ValueError:
             return json.dumps({ "error": "Recieved invalid json" })
         data = json_data["signatures"]["inputs"][0][0]["data"]
+        #data1 = json_data["signatures"]["inputs"][0][0]["data1"]
+        #data2 = json_data["signatures"]["inputs"][0][0]["data2"]
         #writing the inp image
         #b64_filewriter(filename, data)
         
