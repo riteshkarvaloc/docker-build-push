@@ -6,11 +6,15 @@ import io
 import os
 import logging
 import json
+import SimpleITK as sitk
+import numpy as np
 
-
-filename = 'temp.jpg'
-
-model_name = os.getenv('MODEL_NAME',None)
+def load_itk(filename):
+    itkimage = sitk.ReadImage(filename)
+    ct_scan = sitk.GetArrayFromImage(itkimage)
+    origin = np.array(list(reversed(itkimage.GetOrigin())))
+    spacing = np.array(list(reversed(itkimage.GetSpacing())))
+    return ct_scan, origin, spacing
 
 def b64_filewriter(filename, content):
     string = content.encode('utf8')
@@ -18,6 +22,10 @@ def b64_filewriter(filename, content):
     fp = open(filename, "wb")
     fp.write(b64_decode)
     fp.close()
+    
+filename = 'temp.jpg'
+
+model_name = os.getenv('MODEL_NAME',None)
 
 
 class KFServingSampleModel(kfserving.KFModel):
@@ -41,6 +49,7 @@ class KFServingSampleModel(kfserving.KFModel):
         #data2 = json_data["signatures"]["inputs"][0][0]["data2"]
         #writing the inp image
         #b64_filewriter(filename, data)
+        ct_scan, origin, spacing = load_itk('images/original_sub.mhd')
         
         with open('images/AMRD14-segmentation.jpeg', 'rb') as open_file:
             byte_content = open_file.read()
